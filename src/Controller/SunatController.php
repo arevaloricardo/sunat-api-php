@@ -7,6 +7,12 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Greenter\GreApi\GreSender;
 use Greenter\GreApi\Model\Shipment;
+use Greenter\GreApi\Model\Direction;
+use Greenter\GreApi\Model\Transportist;
+use Greenter\GreApi\Model\Company;
+use Greenter\GreApi\Model\Client;
+use Greenter\GreApi\Model\DespatchDetail;
+use DateTime;
 
 class SunatController
 {
@@ -69,21 +75,103 @@ class SunatController
      */
     private function crearShipment(array $data): Shipment
     {
+        // 1. Datos del transportista
+        $transportista = new Transportist();
+        if (isset($data['transportista'])) {
+            $transportista->setTipoDoc($data['transportista']['tipoDoc'] ?? '6')
+                ->setNumDoc($data['transportista']['numDoc'] ?? '')
+                ->setRznSocial($data['transportista']['rznSocial'] ?? '')
+                ->setNroMtc($data['transportista']['nroMtc'] ?? '');
+        }
+
+        // 2. Datos del envío (Shipment)
         $shipment = new Shipment();
         
-        // Aquí iría la lógica para mapear los datos recibidos
-        // a la estructura requerida por greenter/gre-api
-        // Este es un ejemplo básico, deberá adaptarse según la documentación de greenter
+        // Información básica del envío
+        $shipment->setVersion($data['version'] ?? '2022')
+            ->setTipoDoc($data['tipoDoc'] ?? '09')
+            ->setSerie($data['serie'] ?? '')
+            ->setCorrelativo($data['correlativo'] ?? '')
+            ->setFechaEmision(new DateTime($data['fechaEmision'] ?? 'now'));
         
-        // Ejemplo de asignación de propiedades
-        if (isset($data['shipment'])) {
-            $shipmentData = $data['shipment'];
+        // 3. Datos del traslado 
+        $envio = isset($data['envio']) ? $data['envio'] : [];
+        
+        $shipment->setCodTraslado($envio['codTraslado'] ?? '01') // Cat.20 - Venta por defecto
+            ->setModTraslado($envio['modTraslado'] ?? '01') // Cat.18 - Transp. Publico por defecto
+            ->setFecTraslado(new DateTime($envio['fecTraslado'] ?? 'now'))
+            ->setPesoTotal((float)($envio['pesoTotal'] ?? 0))
+            ->setUndPesoTotal($envio['undPesoTotal'] ?? 'KGM');
+        
+        // Opcionalmente número de bultos (solo para importaciones)
+        if (isset($envio['numBultos'])) {
+            $shipment->setNumBultos((int)$envio['numBultos']);
+        }
+        
+        // 4. Direcciones de partida y llegada
+        // Dirección de llegada
+        if (isset($envio['llegada'])) {
+            $llegada = $envio['llegada'];
+            $direccionLlegada = new Direction(
+                $llegada['ubigeo'] ?? '',
+                $llegada['direccion'] ?? ''
+            );
+            $shipment->setLlegada($direccionLlegada);
+        }
+        
+        // Dirección de partida
+        if (isset($envio['partida'])) {
+            $partida = $envio['partida'];
+            $direccionPartida = new Direction(
+                $partida['ubigeo'] ?? '',
+                $partida['direccion'] ?? ''
+            );
+            $shipment->setPartida($direccionPartida);
+        }
+        
+        // 5. Asignar transportista
+        $shipment->setTransportista($transportista);
+        
+        // 6. Empresa remitente
+        if (isset($data['company'])) {
+            $company = new Company();
+            $company->setRuc($data['company']['ruc'] ?? '')
+                ->setRazonSocial($data['company']['razonSocial'] ?? '')
+                ->setNombreComercial($data['company']['nombreComercial'] ?? '');
             
-            // Configurar las propiedades según la documentación de greenter/gre-api
-            // Por ejemplo:
-            // $shipment->setSerie($shipmentData['serie'] ?? null);
-            // $shipment->setCorrelativo($shipmentData['correlativo'] ?? null);
-            // etc.
+            $shipment->setCompany($company);
+        }
+        
+        // 7. Destinatario
+        if (isset($data['destinatario'])) {
+            $destinatario = new Client();
+            $destinatario->setTipoDoc($data['destinatario']['tipoDoc'] ?? '6')
+                ->setNumDoc($data['destinatario']['numDoc'] ?? '')
+                ->setRznSocial($data['destinatario']['rznSocial'] ?? '');
+            
+            $shipment->setDestinatario($destinatario);
+        }
+        
+        // 8. Detalles de la guía
+        if (isset($data['detalles']) && is_array($data['detalles'])) {
+            $detalles = [];
+            
+            foreach ($data['detalles'] as $item) {
+                $detalle = new DespatchDetail();
+                $detalle->setCantidad((float)($item['cantidad'] ?? 0))
+                    ->setUnidad($item['unidad'] ?? 'ZZ')
+                    ->setDescripcion($item['descripcion'] ?? '')
+                    ->setCodigo($item['codigo'] ?? '');
+                
+                // Opcionalmente se puede añadir código de producto SUNAT
+                if (isset($item['codProducto'])) {
+                    $detalle->setCodProducto($item['codProducto']);
+                }
+                
+                $detalles[] = $detalle;
+            }
+            
+            $shipment->setDetails($detalles);
         }
         
         return $shipment;

@@ -1,0 +1,54 @@
+{
+  "version": "2022",
+  "tipoDoc": "09",
+  "serie": "T001",
+  "correlativo": "1",
+  "fechaEmision": "2023-06-15",
+  "company": {
+    "ruc": "20123456789",
+    "razonSocial": "MI EMPRESA S.A.C.",
+    "nombreComercial": "MI EMPRESA"
+  },
+  "destinatario": {
+    "tipoDoc": "6",
+    "numDoc": "20987654321",
+    "rznSocial": "EMPRESA DESTINATARIA S.A.C."
+  },
+  "transportista": {
+    "tipoDoc": "6",
+    "numDoc": "20111222333",
+    "rznSocial": "TRANSPORTES S.A.C.",
+    "nroMtc": "0001"
+  },
+  "envio": {
+    "codTraslado": "01",
+    "modTraslado": "01",
+    "fecTraslado": "2023-06-16",
+    "pesoTotal": 12.5,
+    "undPesoTotal": "KGM",
+    "numBultos": 2,
+    "llegada": {
+      "ubigeo": "150101",
+      "direccion": "AV LIMA 123, LIMA"
+    },
+    "partida": {
+      "ubigeo": "150203",
+      "direccion": "AV ITALIA 456, CALLAO"
+    }
+  },
+  "detalles": [
+    {
+      "cantidad": 2,
+      "unidad": "ZZ",
+      "descripcion": "PRODUCTO 1",
+      "codigo": "PROD001",
+      "codProducto": "12345678"
+    },
+    {
+      "cantidad": 3,
+      "unidad": "ZZ",
+      "descripcion": "PRODUCTO 2",
+      "codigo": "PROD002"
+    }
+  ]
+} 
