@@ -1,0 +1,48 @@
+# Archivos de entorno con información sensible
+.env
+.env.*
+!.env.example
+
+# Dependencias instaladas con Composer
+/vendor/
+
+# Archivos de caché de Composer
+composer.phar
+/composer.lock
+
+# Logs y archivos generados
+/logs/*
+!/logs/.gitkeep
+/temp/*
+!/temp/.gitkeep
+*.log
+
+# Archivos específicos de Docker
+docker-compose.override.yml
+
+# Archivos específicos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de IDEs y editores
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+.komodotools/
+.eclipse/
+.settings/
+.buildpath
+.project
+nbproject/
+.phpunit.result.cache
+
+# Archivos de distribución y construcción
+/build/
+/dist/
+
+# Archivos de caché y compilación PHP
+*.php~
+/.php_cs.cache
+/.phpunit.cache/ 

@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sunat-api
+    restart: unless-stopped
+    ports:
+      - "${SERVER_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    env_file:
+      - .env
+    networks:
+      - sunat-network
+
+networks:
+  sunat-network:
+    driver: bridge 
